@@ -46,7 +46,7 @@ Route::get('/checkout/{slug}', function ($slug) {
         'plan' => $plan,
         'stripeKey' => config('services.stripe.key')
     ]);
-});
+})->name('checkout');
 
 // Subscription Route
 Route::post('/subscription/create-payment-intent', [SubscriptionController::class, 'createPaymentIntent'])->name('subscription.create-payment-intent');
