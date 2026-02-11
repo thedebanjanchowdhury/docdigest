@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-industrial-white text-industrial-grey font-sans antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-bold tracking-tight uppercase;
+    }
+
+    .brutal-border {
+        @apply border-2 border-industrial-grey;
+    }
+
+    .brutal-shadow {
+        @apply shadow-[4px_4px_0px_0px_rgba(42,42,42,1)];
+    }
+    
+    .industrial-grid {
+        background-image: linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+        linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+}

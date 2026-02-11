@@ -7,19 +7,17 @@ import { useState } from "react";
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <nav className="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div className="min-h-screen bg-industrial-white industrial-grid">
+            <nav className="bg-industrial-white border-b-4 border-industrial-grey">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
+                    <div className="flex h-20 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                    <ApplicationLogo className="block h-9 w-auto fill-current text-industrial-grey" />
                                 </Link>
                             </div>
 
@@ -27,6 +25,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route("dashboard")}
                                     active={route().current("dashboard")}
+                                    className="uppercase font-bold tracking-widest text-industrial-grey hover:bg-industrial-grey hover:text-industrial-white transition-colors duration-0 px-4 h-full flex items-center border-l-2 border-r-2 border-transparent hover:border-industrial-grey"
                                 >
                                     Dashboard
                                 </NavLink>
@@ -37,12 +36,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
+                                        <span className="inline-flex">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                                                className="inline-flex items-center px-4 py-2 border-2 border-industrial-grey bg-white text-sm font-bold leading-4 text-industrial-grey hover:bg-industrial-grey hover:text-white transition duration-0 shadow-[4px_4px_0px_0px_rgba(42,42,42,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                                             >
-                                                {user.name}
+                                                {user.name.toUpperCase()}
 
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
@@ -60,17 +59,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </span>
                                     </Dropdown.Trigger>
 
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route("profile.edit")}
-                                        >
+                                    <Dropdown.Content contentClasses="bg-white border-2 border-industrial-grey shadow-[4px_4px_0px_0px_rgba(42,42,42,1)] py-0">
+                                        <Dropdown.Link href={route("profile.edit")} className="border-b-2 border-industrial-grey hover:bg-industrial-grey hover:text-white font-bold uppercase">
                                             Profile
                                         </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route("logout")}
-                                            method="post"
-                                            as="button"
-                                        >
+                                        <Dropdown.Link href={route("logout")} method="post" as="button" className="hover:bg-industrial-red hover:text-white font-bold uppercase">
                                             Log Out
                                         </Dropdown.Link>
                                     </Dropdown.Content>
@@ -80,39 +73,22 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-gray-900 dark:hover:text-gray-400 dark:focus:bg-gray-900 dark:focus:text-gray-400"
+                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                                className="inline-flex items-center justify-center p-2 text-industrial-grey hover:bg-industrial-grey hover:text-white border-2 border-industrial-grey transition duration-0"
                             >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? "inline-flex"
-                                                : "hidden"
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
+                                        className={!showingNavigationDropdown ? "inline-flex" : "hidden"}
+                                        strokeLinecap="square"
+                                        strokeLinejoin="miter"
+                                        strokeWidth="3"
                                         d="M4 6h16M4 12h16M4 18h16"
                                     />
                                     <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? "inline-flex"
-                                                : "hidden"
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
+                                        className={showingNavigationDropdown ? "inline-flex" : "hidden"}
+                                        strokeLinecap="square"
+                                        strokeLinejoin="miter"
+                                        strokeWidth="3"
                                         d="M6 18L18 6M6 6l12 12"
                                     />
                                 </svg>
@@ -121,40 +97,22 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? "block" : "hidden") +
-                        " sm:hidden"
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route("dashboard")}
-                            active={route().current("dashboard")}
-                        >
+                <div className={(showingNavigationDropdown ? "block" : "hidden") + " sm:hidden border-t-4 border-industrial-grey"}>
+                    <div className="space-y-0">
+                        <ResponsiveNavLink href={route("dashboard")} active={route().current("dashboard")} className="border-b-2 border-industrial-grey">
                             Dashboard
                         </ResponsiveNavLink>
                     </div>
 
-                    <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
+                    <div className="border-t-4 border-industrial-grey pb-1 pt-4 bg-gray-50">
                         <div className="px-4">
-                            <div className="text-base font-medium text-gray-800 dark:text-gray-200">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
+                            <div className="text-base font-bold text-industrial-grey uppercase">{user.name}</div>
+                            <div className="text-sm font-medium text-gray-500 font-mono">{user.email}</div>
                         </div>
 
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route("profile.edit")}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route("logout")}
-                                as="button"
-                            >
+                        <div className="mt-3 space-y-0">
+                            <ResponsiveNavLink href={route("profile.edit")} className="border-b-2 border-industrial-grey">Profile</ResponsiveNavLink>
+                            <ResponsiveNavLink method="post" href={route("logout")} as="button" className="border-b-2 border-industrial-grey hover:bg-industrial-red hover:text-white">
                                 Log Out
                             </ResponsiveNavLink>
                         </div>
@@ -163,14 +121,16 @@ export default function AuthenticatedLayout({ header, children }) {
             </nav>
 
             {header && (
-                <header className="bg-white shadow dark:bg-gray-800">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
+                <header className="bg-white border-b-4 border-industrial-grey">
+                    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                        <h2 className="text-3xl font-black uppercase tracking-tighter text-industrial-grey">
+                            {header}
+                        </h2>
                     </div>
                 </header>
             )}
 
-            <main>{children}</main>
+            <main className="py-12">{children}</main>
         </div>
     );
 }

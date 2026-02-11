@@ -13,7 +13,18 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+                sans: ["Inter", "system-ui", "sans-serif"],
+                mono: ["JetBrains Mono", "monospace"],
+            },
+            colors: {
+                industrial: {
+                    white: "#F5F5F5",
+                    grey: "#2A2A2A",
+                    red: "#8B0000",
+                },
+            },
+            boxShadow: {
+                brutal: "4px 4px 0px 0px #2A2A2A",
             },
         },
     },

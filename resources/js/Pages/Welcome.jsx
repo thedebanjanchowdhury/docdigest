@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Head, Link, router } from "@inertiajs/react";
+import FileUploadModal from "@/Components/FileUploadModal";
 import {
     IconCheck,
     IconSparkles,
@@ -8,6 +9,7 @@ import {
     IconArrowRight,
     IconStar,
     IconFile,
+    IconCloudUpload,
 } from "@tabler/icons-react";
 import FlashMessage from "@/Components/FlashMessage";
 import axios from "axios";
@@ -22,6 +24,7 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
     const [summary, setSummary] = useState("");
     const [showSummary, setShowSummary] = useState(false);
     const [showSummaryOptions, setShowSummaryOptions] = useState(false);
+    const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [progress, setProgress] = useState(0);
     const fileInputRef = useRef(null);
@@ -98,30 +101,14 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
             setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
         }, 200);
 
-        // Ensure we use the correct CSRF token if not handled automatically by axios
-        // In Laravel + Axios (bootstrap.js), XSRF is usually handled.
-        // However, if we need to manually pass it:
-        const csrfToken =
-            document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || "";
-
         try {
-            // Assuming axios is globally available as window.axios or we might need to import it.
-            // If the project uses standard laravel setup, window.axios is usually available.
-            // But standard 'import' is better if we can.
-            // I'll use window.axios if available, or just axios if it assumes global
-            // The original code used 'axios', let's assume it's available or should be imported.
-            // I'll check if I should add import later, but for now let's fix logic.
             const response = await axios.post("/pdf/summarize", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    // 'X-XSRF-TOKEN': decodeURIComponent(csrfToken), // Axios usually does this
                 },
             });
 
             clearInterval(progressInterval);
-
-            // Axios throws on non-2xx usually. If we are here, it's likely success.
-            // But we can check status if we want.
 
             const data = response.data;
             setProgress(100);
@@ -134,7 +121,7 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
             setTimeout(() => {
                 setLoading(false);
                 setShowSummary(true);
-            }, 1500);
+            }, 1000);
         } catch (error) {
             clearInterval(progressInterval);
             console.error("Error generating summary:", error);
@@ -175,9 +162,9 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
     };
 
     const getPlanIcon = (slug) => {
-        if (slug === "standard") return <IconFile className="h-8 w-8" />;
-        if (slug === "premium") return <IconRocket className="h-8 w-8" />;
-        return <IconSparkles className="h-8 w-8" />;
+        if (slug === "standard") return <IconFile className="h-8 w-8" strokeWidth={2} />;
+        if (slug === "premium") return <IconRocket className="h-8 w-8" strokeWidth={2} />;
+        return <IconSparkles className="h-8 w-8" strokeWidth={2} />;
     };
 
     const handlePlanClick = (plan) => {
@@ -188,19 +175,22 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
 
     return (
         <>
-            <Head title="DocDigest - AI Powered PDF Summarizer" />
+            <Head title="DocDigest - Brutal Simplicity" />
 
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 dark:from-slate-900 dark:via-slate-800 dark:to-violet-900 overflow-x-hidden selection:bg-violet-500 selection:text-white">
+            <div className="min-h-screen bg-industrial-white industrial-grid text-industrial-grey selection:bg-industrial-grey selection:text-white">
                 <FlashMessage flash={flash} />
 
-                {/* Dynamic Background */}
-                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                    <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-3xl animate-pulse opacity-20"></div>
-                    <div className="absolute top-1/2 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl opacity-20"></div>
-                    <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-fuchsia-500/10 rounded-full blur-3xl opacity-20"></div>
-                </div>
-
                 {/* Modals */}
+                <FileUploadModal
+                    show={showUploadModal}
+                    onClose={() => setShowUploadModal(false)}
+                    userStats={userStats}
+                    onFileSelect={(file) => {
+                        handleFileSelect(file);
+                        setShowUploadModal(false);
+                    }}
+                />
+                
                 <SummaryOptionsModel
                     show={showSummaryOptions && !!selectedFile}
                     fileName={selectedFile?.name}
@@ -222,25 +212,41 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                 />
 
                 {/* Navigation */}
-                <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800 transition-all duration-300">
+                <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b-4 border-industrial-grey">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between items-center h-16">
+                        <div className="flex justify-between items-center h-20">
                             {/* Logo */}
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-violet-500/20">
-                                    <IconFile size={24} />
-                                </div>
-                                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">
-                                    DocDigest
-                                </span>
+                                <Link href="/" className="flex items-center gap-2 group">
+                                    <div className="p-2 border-2 border-industrial-grey bg-white shadow-[4px_4px_0px_0px_rgba(42,42,42,1)] group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all duration-0">
+                                         <IconFile size={24} strokeWidth={2.5} />
+                                    </div>
+                                    <span className="text-2xl font-black uppercase tracking-tighter text-industrial-grey">
+                                        DocDigest
+                                    </span>
+                                </Link>
                             </div>
 
                             {/* Auth Buttons */}
                             <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => {
+                                         if (auth?.user) {
+                                            setShowUploadModal(true);
+                                         } else {
+                                             router.visit(route('login'));
+                                         }
+                                    }}
+                                    className="hidden md:flex items-center gap-2 px-6 py-2 text-sm font-bold uppercase tracking-wider text-industrial-grey hover:bg-industrial-grey hover:text-white transition-colors border-2 border-transparent hover:border-industrial-grey"
+                                >
+                                    <IconCloudUpload size={20} />
+                                    Upload PDF
+                                </button>
+
                                 {auth?.user ? (
                                     <Link
                                         href={route("dashboard")}
-                                        className="flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm text-white bg-slate-900 dark:bg-white dark:text-slate-900 hover:opacity-90 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                                        className="flex items-center gap-2 px-6 py-2 bg-industrial-grey text-white text-sm font-bold uppercase tracking-wider border-2 border-industrial-grey shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] hover:bg-white hover:text-industrial-grey hover:shadow-[4px_4px_0px_0px_#8B0000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-0"
                                     >
                                         Dashboard
                                         <IconArrowRight size={16} />
@@ -249,14 +255,14 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                                     <>
                                         <Link
                                             href={route("login")}
-                                            className="text-slate-600 dark:text-slate-400 font-medium text-sm hover:text-slate-900 dark:hover:text-white transition-colors"
+                                            className="text-industrial-grey text-sm font-bold uppercase tracking-wider hover:underline"
                                         >
                                             Log in
                                         </Link>
                                         {canRegister && (
                                             <Link
                                                 href={route("register")}
-                                                className="px-5 py-2.5 rounded-full font-medium text-sm text-white bg-violet-600 hover:bg-violet-700 transition-all shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 active:scale-95"
+                                                className="px-6 py-2 bg-industrial-grey text-white text-sm font-bold uppercase tracking-wider border-2 border-industrial-grey shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] hover:bg-white hover:text-industrial-grey hover:shadow-[4px_4px_0px_0px_#8B0000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-0"
                                             >
                                                 Get Started
                                             </Link>
@@ -269,26 +275,24 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                 </nav>
 
                 {/* Content Container */}
-                <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <div className="relative z-10 pt-40 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                     {/* Hero Section */}
                     <div
                         className={`transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
                     >
-                        <div className="text-center max-w-3xl mx-auto mb-16">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 text-xs font-semibold uppercase tracking-wide mb-6">
+                        <div className="text-center max-w-4xl mx-auto mb-20">
+                            <div className="inline-flex items-center gap-2 px-4 py-1 border-2 border-industrial-grey bg-white text-industrial-grey text-xs font-bold uppercase tracking-widest mb-8 shadow-[4px_4px_0px_0px_rgba(42,42,42,1)]">
                                 <IconSparkles size={14} />
                                 <span>AI-Powered Analysis</span>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
-                                Understand Documents <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">
-                                    in Seconds
+                            <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-industrial-grey mb-8 uppercase leading-none">
+                                Understand <br />
+                                <span className="text-stroke-2 text-transparent bg-clip-text bg-industrial-grey" style={{ WebkitTextStroke: "2px #2A2A2A", color: "transparent" }}>
+                                    Documents
                                 </span>
                             </h1>
-                            <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-2xl mx-auto">
-                                Stop wasting hours reading long PDFs. Upload
-                                your document and get instant, accurate
-                                summaries powered by advanced AI.
+                            <p className="text-xl md:text-2xl text-industrial-grey font-mono mb-12 max-w-2xl mx-auto uppercase">
+                                No nonsense. Just results. Upload your PDF. get the facts.
                             </p>
                         </div>
 
@@ -300,27 +304,28 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                             className="max-w-2xl mx-auto"
                         >
                             <div
-                                className={`group relative rounded-3xl border-2 border-dashed transition-all duration-300 ease-out
+                                className={`group relative border-4 border-industrial-grey transition-all duration-0 
                 ${
                     isDragging
-                        ? "border-violet-500 bg-violet-50/50 dark:bg-violet-900/20 scale-105 shadow-2xl shadow-violet-500/10"
-                        : "border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:border-violet-400 hover:bg-white dark:hover:bg-slate-800 shadow-xl"
+                        ? "bg-white scale-[1.02] shadow-[8px_8px_0px_0px_#8B0000]"
+                        : "bg-white hover:shadow-[8px_8px_0px_0px_rgba(42,42,42,1)]"
                 }`}
                             >
-                                <div className="p-12 text-center">
-                                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-slate-700 dark:to-slate-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-16 text-center">
+                                    <div className="w-24 h-24 mx-auto border-2 border-industrial-grey flex items-center justify-center mb-8 shadow-[4px_4px_0px_0px_rgba(42,42,42,1)] group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all duration-0 bg-white">
                                         <IconFile
-                                            className={`w-10 h-10 ${isDragging ? "text-violet-600" : "text-slate-500 dark:text-slate-400"} transition-colors`}
+                                            className="w-12 h-12 text-industrial-grey"
+                                            strokeWidth={1.5}
                                         />
                                     </div>
 
-                                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                                    <h3 className="text-2xl font-black uppercase tracking-tight text-industrial-grey mb-2">
                                         {isDragging
-                                            ? "Drop your PDF here"
-                                            : "Upload your PDF"}
+                                            ? "Drop IT!"
+                                            : "Upload PDF"}
                                     </h3>
-                                    <p className="text-slate-500 dark:text-slate-400 mb-8">
-                                        Drag and drop or browse to choose a file
+                                    <p className="text-industrial-grey font-mono text-sm mb-10">
+                                        Drag and drop or click below
                                     </p>
 
                                     <input
@@ -336,7 +341,7 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                                             fileInputRef.current?.click()
                                         }
                                         disabled={loading}
-                                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold hover:opacity-90 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="inline-flex items-center gap-3 px-10 py-4 bg-industrial-grey text-white font-bold uppercase tracking-widest hover:bg-white hover:text-industrial-grey border-2 border-industrial-grey shadow-[4px_4px_0px_0px_#8B0000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-0 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {loading ? (
                                             <>
@@ -345,36 +350,29 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                                             </>
                                         ) : (
                                             <>
-                                                <IconRocket size={20} />
-                                                <span>Choose File</span>
+                                                <IconRocket size={24} />
+                                                <span>Select File</span>
                                             </>
                                         )}
                                     </button>
-
-                                    <p className="mt-4 text-xs text-slate-400">
-                                        Up to 10MB PDF files supported
-                                    </p>
                                 </div>
 
                                 {/* Loading/Progress Overlay */}
                                 {loading && (
-                                    <div className="absolute inset-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center p-8">
-                                        <div className="w-full max-w-xs space-y-4 text-center">
-                                            <div className="mx-auto w-16 h-16 relative">
-                                                <div className="absolute inset-0 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
-                                                <div className="absolute inset-0 border-4 border-violet-600 rounded-full border-t-transparent animate-spin"></div>
-                                            </div>
+                                    <div className="absolute inset-0 z-20 bg-white/90 flex flex-col items-center justify-center p-8 border-4 border-industrial-grey m-[-4px]">
+                                        <div className="w-full max-w-xs space-y-6 text-center">
+                                            <div className="mx-auto w-20 h-20 border-4 border-industrial-grey border-t-transparent animate-spin rounded-full"></div>
                                             <div>
-                                                <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-                                                    Analyzing Document
+                                                <h4 className="text-2xl font-black uppercase text-industrial-grey">
+                                                    Analyzing
                                                 </h4>
-                                                <p className="text-sm text-slate-500">
-                                                    Extracting key insights...
+                                                <p className="text-sm font-mono text-industrial-grey mt-2">
+                                                    Extracting data...
                                                 </p>
                                             </div>
-                                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                                            <div className="w-full border-2 border-industrial-grey h-4 p-0.5">
                                                 <div
-                                                    className="h-full bg-violet-600 transition-all duration-300 ease-out"
+                                                    className="h-full bg-industrial-grey transition-all duration-300 ease-out"
                                                     style={{
                                                         width: `${progress}%`,
                                                     }}
@@ -388,44 +386,38 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                     </div>
 
                     {/* Features Grid */}
-                    <div className="mt-32 grid md:grid-cols-3 gap-8">
+                    <div className="mt-40 grid md:grid-cols-3 gap-8">
                         {[
                             {
-                                icon: (
-                                    <IconStar className="w-6 h-6 text-amber-500" />
-                                ),
+                                icon: <IconStar className="w-8 h-8" />,
                                 title: "Smart Summaries",
                                 description:
-                                    "Get concise, accurate summaries of complex documents in seconds using advanced AI.",
+                                    "Concise. Accurate. Fast. AI cutting through the noise.",
                             },
                             {
-                                icon: (
-                                    <IconAdjustmentsUp className="w-6 h-6 text-violet-500" />
-                                ),
+                                icon: <IconAdjustmentsUp className="w-8 h-8" />,
                                 title: "Key Insights",
                                 description:
-                                    "Automatically extract important points, dates, and actionable items from your files.",
+                                    "Extract dates, points, and actions automatically.",
                             },
                             {
-                                icon: (
-                                    <IconCheck className="w-6 h-6 text-emerald-500" />
-                                ),
-                                title: "Secure & Private",
+                                icon: <IconCheck className="w-8 h-8" />,
+                                title: "Secure",
                                 description:
-                                    "Your documents are processed securely and deleted automatically after analysis.",
+                                    "Processed securely. Deleted automatically.",
                             },
                         ].map((feature, idx) => (
                             <div
                                 key={idx}
-                                className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                                className="p-8 border-4 border-industrial-grey bg-white hover:shadow-[8px_8px_0px_0px_rgba(42,42,42,1)] hover:-translate-y-1 transition-all duration-0"
                             >
-                                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-4">
+                                <div className="w-16 h-16 border-2 border-industrial-grey flex items-center justify-center mb-6 shadow-[4px_4px_0px_0px_rgba(42,42,42,1)]">
                                     {feature.icon}
                                 </div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                                <h3 className="text-xl font-black uppercase text-industrial-grey mb-3">
                                     {feature.title}
                                 </h3>
-                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+                                <p className="text-industrial-grey font-mono text-sm leading-relaxed">
                                     {feature.description}
                                 </p>
                             </div>
@@ -434,60 +426,60 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
 
                     {/* Pricing Section */}
                     {safePlans.length > 0 && (
-                        <div className="mt-32">
-                            <div className="text-center mb-16">
-                                <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                                    Simple, Transparent Pricing
+                        <div className="mt-40">
+                            <div className="text-center mb-20">
+                                <h2 className="text-4xl md:text-5xl font-black text-industrial-grey uppercase mb-4">
+                                    Pricing
                                 </h2>
-                                <p className="text-slate-600 dark:text-slate-400">
-                                    Choose the plan that fits your needs
+                                <p className="text-xl font-mono text-industrial-grey">
+                                    Simple. Transparent. Rigid.
                                 </p>
                             </div>
 
-                            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                                 {safePlans.map((plan) => (
                                     <div
                                         key={plan.id}
-                                        className={`relative p-8 rounded-3xl border transition-all duration-300 flex flex-col
+                                        className={`relative p-8 border-4 border-industrial-grey flex flex-col transition-all duration-0
                             ${
                                 plan.isPopular
-                                    ? "border-violet-500 bg-white dark:bg-slate-800 shadow-2xl shadow-violet-500/10 z-10 scale-105"
-                                    : "border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800"
+                                    ? "bg-white shadow-[12px_12px_0px_0px_#8B0000] z-10 scale-105"
+                                    : "bg-white hover:shadow-[8px_8px_0px_0px_rgba(42,42,42,1)]"
                             }`}
                                     >
                                         {plan.isPopular && (
-                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                                                Most Popular
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-industrial-red text-white text-xs font-bold px-4 py-2 border-2 border-industrial-grey uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(42,42,42,1)]">
+                                                Best Value
                                             </div>
                                         )}
 
-                                        <div className="mb-8">
-                                            <div className="w-12 h-12 rounded-xl bg-violet-100/50 dark:bg-slate-700 flex items-center justify-center mb-6 text-violet-600 dark:text-violet-400">
+                                        <div className="mb-8 text-center">
+                                            <div className="w-16 h-16 mx-auto border-2 border-industrial-grey flex items-center justify-center mb-6 text-industrial-grey shadow-[4px_4px_0px_0px_rgba(42,42,42,1)] bg-white">
                                                 {getPlanIcon(plan.slug)}
                                             </div>
-                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white capitalize mb-2">
+                                            <h3 className="text-2xl font-black text-industrial-grey uppercase mb-2">
                                                 {plan.name}
                                             </h3>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-4xl font-extrabold text-slate-900 dark:text-white">
+                                            <div className="flex items-baseline justify-center gap-1 font-mono">
+                                                <span className="text-5xl font-bold text-industrial-grey">
                                                     ${plan.price}
                                                 </span>
-                                                <span className="text-slate-500">
-                                                    /month
+                                                <span className="text-industrial-grey text-sm">
+                                                    /mo
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <ul className="space-y-4 mb-8 flex-1">
+                                        <ul className="space-y-4 mb-10 flex-1 border-t-2 border-b-2 border-industrial-grey py-8 border-dashed">
                                             {plan.features &&
                                                 plan.features.map(
                                                     (feature, i) => (
                                                         <li
                                                             key={i}
-                                                            className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300"
+                                                            className="flex items-start gap-3 text-sm font-bold text-industrial-grey"
                                                         >
-                                                            <IconCheck className="w-5 h-5 text-emerald-500 shrink-0" />
-                                                            <span>
+                                                            <IconCheck className="w-5 h-5 text-industrial-grey shrink-0 border border-industrial-grey p-0.5" />
+                                                            <span className="uppercase text-xs tracking-wide">
                                                                 {feature}
                                                             </span>
                                                         </li>
@@ -499,20 +491,18 @@ const Welcome = ({ plans = [], canRegister, auth, userStats, flash }) => {
                                             onClick={() =>
                                                 handlePlanClick(plan)
                                             }
-                                            className={`w-full py-3 rounded-full font-bold text-sm transition-all
+                                            className={`w-full py-4 text-sm font-bold uppercase tracking-widest border-2 border-industrial-grey transition-all duration-0 shadow-[4px_4px_0px_0px_rgba(42,42,42,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none
                                     ${
                                         plan.isCurrent
-                                            ? "bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-default"
-                                            : plan.isPopular
-                                              ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:shadow-lg hover:scale-[1.02]"
-                                              : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white hover:border-slate-900 dark:hover:border-slate-400"
+                                            ? "bg-gray-200 text-gray-500 cursor-default shadow-none border-dashed"
+                                            : "bg-industrial-grey text-white hover:bg-white hover:text-industrial-grey"
                                     }`}
                                         >
                                             {plan.isCurrent
-                                                ? "Current Plan"
+                                                ? "Active Plan"
                                                 : plan.price === 0
-                                                  ? "Get Started Free"
-                                                  : "Subscribe Now"}
+                                                  ? "Start Free"
+                                                  : "Subscribe"}
                                         </button>
                                     </div>
                                 ))}

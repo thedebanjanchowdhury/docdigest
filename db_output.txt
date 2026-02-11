@@ -1,0 +1,8 @@
+=== PLANS ===
+ID: 1 | Name: Basic | Slug: basic | Limit: 10
+ID: 2 | Name: Standard | Slug: standard | Limit: 50
+ID: 3 | Name: Premium | Slug: premium | Limit: 100000
+
+=== USERS ===
+ID: 1 | Admin User | plan_id: 3 | Plan: Premium | Limit: 100000 | Count: 0
+ID: 2 | Test User | plan_id: 3 | Plan: Premium | Limit: 100000 | Count: 2

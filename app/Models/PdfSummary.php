@@ -15,8 +15,15 @@ class PdfSummary extends Model
     protected $fillable = [
         'user_id',
         'summary',
+        'key_insights',
         'filename',
         'filesize',
+        'pdf_path',
+        'summary_type',
+    ];
+
+    protected $casts = [
+        'key_insights' => 'array',
     ];
 
     public function user() {

@@ -64,7 +64,7 @@ class User extends Authenticatable
             if(!$user->plan_id) {
                 $basicPlan = Plan::query()->firstWhere('slug', 'basic');
                 if ($basicPlan) {
-                    $user->plan_id = $basicPlan->plan_id;
+                    $user->plan_id = $basicPlan->id;
                     $user->pdf_count = 0;
                     $user->pdf_count_reset_at = now()->addMonth();
                 }
@@ -103,6 +103,9 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isPremium(): bool {
+        return $this->plan && $this->plan->slug === 'premium';
+    }
     public function hasActiveSubscription(): bool {
         if (!$this->stripe_subscription_id) {
             return false;

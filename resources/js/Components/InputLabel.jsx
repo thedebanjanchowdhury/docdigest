@@ -8,9 +8,10 @@ export default function InputLabel({
         <label
             {...props}
             className={
-                `block text-sm font-medium text-gray-700 dark:text-gray-300 ` +
+                `block text-sm font-bold uppercase tracking-wider text-industrial-grey mb-1 ` +
                 className
             }
+            xmlns="http://www.w3.org/2000/svg"
         >
             {value ? value : children}
         </label>
